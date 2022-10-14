@@ -26,7 +26,10 @@ export default class Barcode extends PureComponent {
     /* Set the background of the barcode. */
     background: PropTypes.string,
     /* Handle error for invalid barcode of selected format */
-    onError: PropTypes.func
+    onError: PropTypes.func,
+    /* dont follow the font size scalling  from systerm. */
+    allowFontScaling: PropTypes.bool,
+    textFontSize: PropTypes.number,
   };
 
   static defaultProps = {
@@ -38,40 +41,42 @@ export default class Barcode extends PureComponent {
     lineColor: '#000000',
     textColor: '#000000',
     background: '#ffffff',
-    onError: undefined
+    onError: undefined,
+    allowFontScaling: true,
+    textFontSize: 14
   };
 
   constructor(props) {
     super(props);
-    this.state = {
-      bars: [],
-      barCodeWidth: 0
-    };
+    // this.state = {
+    //   bars: [],
+    //   barCodeWidth: 0
+    // };
   }
 
-  componentWillUpdate(nextProps) {
-    if (nextProps.value !== this.props.value) {
-      this.update(nextProps);
-    }
-  }
+  // componentWillUpdate(nextProps) {
+  //   if (nextProps.value !== this.props.value) {
+  //     this.update(nextProps);
+  //   }
+  // }
 
-  componentDidMount() {
-    this.update();
-  }
+  // componentDidMount() {
+  //   this.update();
+  // }
 
-  componentDidUpdate() {
-    this.update();
-  }
+  // componentDidUpdate() {
+  //   this.update();
+  // }
 
-  update() {
-    const encoder = barcodes[this.props.format];
-    const encoded = this.encode(this.props.value, encoder, this.props);
+  // update() {
+  //   const encoder = barcodes[this.props.format];
+  //   const encoded = this.encode(this.props.value, encoder, this.props);
 
-    if (encoded) {
-      this.state.bars = this.drawSvgBarCode(encoded, this.props);
-      this.state.barCodeWidth = encoded.data.length * this.props.width;
-    }
-  }
+  //   if (encoded) {
+  //     this.state.bars = this.drawSvgBarCode(encoded, this.props);
+  //     this.state.barCodeWidth = encoded.data.length * this.props.width;
+  //   }
+  // }
 
   drawSvgBarCode(encoding, options = {}) {
     const rects = [];
@@ -165,9 +170,17 @@ export default class Barcode extends PureComponent {
 
     return encoded;
   }
+ 
 
   render() {
-    this.update();
+    const encoder = barcodes[this.props.format];
+    const encoded = this.encode(this.props.value, encoder, this.props);
+    let bars = [];
+    let barCodeWidth = 0;
+    if (encoded) {
+      bars = this.drawSvgBarCode(encoded, this.props);
+      barCodeWidth = encoded.data.length * this.props.width;
+    }
     const backgroundStyle = {
       backgroundColor: this.props.background
     };
@@ -175,14 +188,15 @@ export default class Barcode extends PureComponent {
       <View style={[styles.svgContainer, backgroundStyle]}>
         <Svg
           height={this.props.height}
-          width={this.state.barCodeWidth}
+          width={barCodeWidth}
           fill={this.props.lineColor}>
           <Path
-            d={this.state.bars.join(' ')}
+            d={bars.join(' ')}
           />
         </Svg>
         {typeof (this.props.text) != 'undefined' &&
-          <Text style={{ color: this.props.textColor, width: this.state.barCodeWidth, textAlign: 'center' }} >
+          <Text style={{ color: this.props.textColor, width: barCodeWidth, textAlign: 'center',fontSize: this.props.textFontSize }} 
+          allowFontScaling ={this.props.allowFontScaling}>
             {this.props.text}
           </Text>
         }
